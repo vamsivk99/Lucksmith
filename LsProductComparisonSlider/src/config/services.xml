@@ -9,6 +9,7 @@
             <tag name="shopware.cms.dataresolver"/>
             <argument type="service" id="Ls\ProductComparisonSlider\Service\ProductComparisonService"/>
             <argument type="service" id="Ls\ProductComparisonSlider\Service\ComparisonAnalyticsService"/>
+            <argument type="service" id="product.repository"/>
         </service>
 
         <service id="Ls\ProductComparisonSlider\Service\ProductComparisonService"/>

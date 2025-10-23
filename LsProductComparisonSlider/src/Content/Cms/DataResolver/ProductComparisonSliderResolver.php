@@ -12,18 +12,22 @@ use Shopware\Core\Content\Cms\CmsElementResolverInterface;
 use Shopware\Core\Content\Cms\CmsElementResolverDataCollection;
 use Shopware\Core\Content\Cms\Exception\CmsException;
 use Shopware\Core\Content\Cms\SalesChannel\SalesChannelCmsElementResolverInterface;
+use Shopware\Core\Content\Cms\Element\ElementDataCollection;
+use Shopware\Core\Content\Cms\Resolver\ResolverContext;
 use Shopware\Core\Content\Product\Aggregate\ProductVisibility\ProductVisibilityDefinition;
 use Shopware\Core\Content\Product\ProductCollection;
-use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Struct\Struct;
-use Shopware\Storefront\Framework\FeatureFlag; // For compatibility
 
 class ProductComparisonSliderResolver implements CmsElementResolverInterface, SalesChannelCmsElementResolverInterface
 {
+    private ProductComparisonService $comparisonService;
+
+    private ComparisonAnalyticsService $analyticsService;
+
     private EntityRepository $productRepository;
 
     public function __construct(
@@ -104,7 +108,7 @@ class ProductComparisonSliderResolver implements CmsElementResolverInterface, Sa
             return;
         }
 
-        $products = $this->resolveProducts($slot, $result, $context);
+        $products = $this->resolveProducts($slot, $result, $context, $productIds);
 
         if ($products->count() < 2) {
             throw CmsException::slotInvalidConfig($slot->getUniqueIdentifier(), 'At least two products are required for comparison.');
@@ -133,7 +137,7 @@ class ProductComparisonSliderResolver implements CmsElementResolverInterface, Sa
         $this->analyticsService->trackComparison($productIds, $context);
     }
 
-    private function resolveProducts(CmsSlotEntity $slot, ElementDataCollection $result, Context $context): ProductCollection
+    private function resolveProducts(CmsSlotEntity $slot, ElementDataCollection $result, Context $context, array $productIds): ProductCollection
     {
         $productSearchResult = $result->getEntitySearchResult($slot->getUniqueIdentifier());
 
@@ -141,15 +145,21 @@ class ProductComparisonSliderResolver implements CmsElementResolverInterface, Sa
             return new ProductCollection();
         }
 
-        $products = $productSearchResult->getEntities();
+        $entities = $productSearchResult->getEntities();
 
-        if (!$products instanceof ProductCollection) {
+        if (!$entities instanceof ProductCollection) {
             return new ProductCollection();
         }
 
-        $products->sort(static fn ($a, $b) => $productSearchResult->getSorting()->rank($a, $b));
+        $sorted = [];
 
-        return $products;
+        foreach ($productIds as $productId) {
+            if ($entities->has($productId)) {
+                $sorted[] = $entities->get($productId);
+            }
+        }
+
+        return new ProductCollection(array_filter($sorted));
     }
 }
 
