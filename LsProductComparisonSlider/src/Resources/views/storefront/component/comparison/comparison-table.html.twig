@@ -1,0 +1,56 @@
+{% block ls_product_comparison_table %}
+    <section class="ls-comparison-table" aria-label="{{ "ls-product-comparison-slider.table.label"|trans }}">
+        <header class="ls-comparison-table__header">
+            <h3>{{ "ls-product-comparison-slider.table.title"|trans }}</h3>
+        </header>
+
+        <div class="ls-comparison-table__container">
+            <table>
+                <thead>
+                    <tr>
+                        <th scope="col">{{ "ls-product-comparison-slider.table.attribute"|trans }}</th>
+                        {% for product in products %}
+                            <th scope="col">{{ product.translated.name }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attribute in attributes %}
+                        <tr data-attribute="{{ attribute }}">
+                            <th scope="row">{{ ("ls-product-comparison-slider.attribute." ~ attribute)|trans }}</th>
+                            {% for product in products %}
+                                {% set normalized = normalizedData[product.id][attribute] ?? null %}
+                                <td>
+                                    {% if attribute == 'price' and normalized %}
+                                        {{ normalized.value|currency }}
+                                    {% elseif attribute == 'rating' and normalized %}
+                                        {{ normalized }}
+                                    {% elseif attribute == 'properties' and normalized %}
+                                        <ul>
+                                            {% for property in normalized %}
+                                                <li>{{ property.group.translated.name }}: {{ property.translated.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% elseif attribute == 'customFields' and normalized %}
+                                        <ul>
+                                            {% for key, value in normalized %}
+                                                <li>{{ key }}: {{ value }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% elseif attribute == 'availability' and normalized is not null %}
+                                        {{ normalized ? "ls-product-comparison-slider.availability.inStock"|trans : "ls-product-comparison-slider.availability.outOfStock"|trans }}
+                                    {% elseif attribute == 'deliveryTime' and normalized %}
+                                        {{ normalized }}
+                                    {% else %}
+                                        &mdash;
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}
+

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+    <card>
+        <title>Lucksmith Product Comparison Slider</title>
+        <text>Globale Einstellungen für den Produktvergleich-Slider.</text>
+        <input-field type="bool">
+            <name>analyticsEnabled</name>
+            <label>Vergleichs-Analytics aktivieren</label>
+            <defaultValue>true</defaultValue>
+        </input-field>
+    </card>
+</config>
+

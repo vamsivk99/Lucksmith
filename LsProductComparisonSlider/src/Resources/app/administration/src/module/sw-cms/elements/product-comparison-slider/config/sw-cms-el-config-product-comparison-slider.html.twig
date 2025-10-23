@@ -1,0 +1,92 @@
+{% block sw_cms_el_config_product_comparison_slider %}
+    <div class="sw-cms-el-config-product-comparison-slider">
+        <sw-field
+            type="text"
+            v-model="element.config.title.value"
+            :label="$tc('ls-product-comparison-slider.config.titleLabel')"
+            :placeholder="$tc('ls-product-comparison-slider.config.titlePlaceholder')"
+        />
+
+        <sw-entity-multi-select
+            v-model="element.config.products.value"
+            :label="$tc('ls-product-comparison-slider.config.productsLabel')"
+            entity="product"
+            :criteria="productCriteria"
+            required
+            :help-text="$tc('ls-product-comparison-slider.config.productsHelp')"
+        />
+
+        <sw-select-field
+            type="select"
+            v-model="element.config.attributes.value"
+            :label="$tc('ls-product-comparison-slider.config.attributesLabel')"
+            :options="[
+                { label: $tc('ls-product-comparison-slider.config.attributePrice'), value: 'price' },
+                { label: $tc('ls-product-comparison-slider.config.attributeRating'), value: 'rating' },
+                { label: $tc('ls-product-comparison-slider.config.attributeProperties'), value: 'properties' },
+                { label: $tc('ls-product-comparison-slider.config.attributeCustomFields'), value: 'customFields' },
+                { label: $tc('ls-product-comparison-slider.config.attributeAvailability'), value: 'availability' },
+                { label: $tc('ls-product-comparison-slider.config.attributeDeliveryTime'), value: 'deliveryTime' }
+            ]"
+            multiple
+            :min-selection="3"
+            :max-selection="8"
+        />
+
+        <sw-single-select
+            v-model="element.config.highlightMode.value"
+            :label="$tc('ls-product-comparison-slider.config.highlightModeLabel')"
+            :options="[
+                { label: $tc('ls-product-comparison-slider.config.highlightBest'), value: 'best' },
+                { label: $tc('ls-product-comparison-slider.config.highlightDifferences'), value: 'difference' },
+                { label: $tc('ls-product-comparison-slider.config.highlightNeutral'), value: 'neutral' }
+            ]"
+        />
+
+        <sw-single-select
+            v-model="element.config.animationStyle.value"
+            :label="$tc('ls-product-comparison-slider.config.animationStyleLabel')"
+            :options="[
+                { label: $tc('ls-product-comparison-slider.config.animationSlide'), value: 'slide' },
+                { label: $tc('ls-product-comparison-slider.config.animationFade'), value: 'fade' },
+                { label: $tc('ls-product-comparison-slider.config.animationFlip'), value: 'flip' },
+                { label: $tc('ls-product-comparison-slider.config.animationZoom'), value: 'zoom' }
+            ]"
+        />
+
+        <sw-switch-field
+            v-model="element.config.showComparisonTable.value"
+            :label="$tc('ls-product-comparison-slider.config.showTableLabel')"
+        />
+
+        <sw-switch-field
+            v-model="element.config.enableQuickAdd.value"
+            :label="$tc('ls-product-comparison-slider.config.quickAddLabel')"
+        />
+
+        <sw-single-select
+            v-model="element.config.colorScheme.value"
+            :label="$tc('ls-product-comparison-slider.config.colorSchemeLabel')"
+            :options="[
+                { label: $tc('ls-product-comparison-slider.config.colorSchemeAuto'), value: 'auto' },
+                { label: $tc('ls-product-comparison-slider.config.colorSchemeLight'), value: 'light' },
+                { label: $tc('ls-product-comparison-slider.config.colorSchemeDark'), value: 'dark' },
+                { label: $tc('ls-product-comparison-slider.config.colorSchemeContrast'), value: 'contrast' }
+            ]"
+        />
+
+        <sw-entity-single-select
+            v-model="element.config.recommendationProductId.value"
+            :label="$tc('ls-product-comparison-slider.config.recommendationLabel')"
+            entity="product"
+            :criteria="productCriteria"
+            :help-text="$tc('ls-product-comparison-slider.config.recommendationHelp')"
+        />
+
+        <sw-tagged-field
+            v-model="element.config.comparisonTags.value"
+            :label="$tc('ls-product-comparison-slider.config.tagsLabel')"
+        />
+    </div>
+{% endblock %}
+

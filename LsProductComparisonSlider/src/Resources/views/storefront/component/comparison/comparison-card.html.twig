@@ -1,0 +1,94 @@
+{% block ls_product_comparison_card %}
+    <article class="ls-comparison-card" data-product-id="{{ product.id }}">
+        {% block ls_product_comparison_card_header %}
+            <header class="ls-comparison-card__header">
+                {% if recommendationProductId and product.id == recommendationProductId %}
+                    <span class="ls-comparison-card__badge">{{ "ls-product-comparison-slider.badge.recommendation"|trans }}</span>
+                {% endif %}
+                <h3>{{ product.translated.name }}</h3>
+                {% if highlightMetrics.rating and highlightMetrics.rating[product.id] is defined %}
+                    <span class="ls-comparison-card__highlight">{{ "ls-product-comparison-slider.highlight.best"|trans }}</span>
+                {% endif %}
+            </header>
+        {% endblock %}
+
+        {% block ls_product_comparison_card_media %}
+            <figure class="ls-comparison-card__media">
+                {% if product.cover %}
+                    {% sw_thumbnails 'product-thumbnails' with {
+                        media: product.cover.media,
+                        sizes: {'default': '320px'},
+                        attributes: {
+                            alt: product.translated.name,
+                            class: 'ls-comparison-card__image',
+                            loading: 'lazy'
+                        }
+                    } %}
+                {% endif %}
+            </figure>
+        {% endblock %}
+
+        {% block ls_product_comparison_card_features %}
+            <div class="ls-comparison-card__features">
+                {% if normalized.price %}
+                    <p class="ls-comparison-card__price" data-attribute="price">
+                        <span class="label">{{ "ls-product-comparison-slider.attribute.price"|trans }}</span>
+                        <span class="value">{{ normalized.price.value|currency }}</span>
+                        {% if normalized.price.discount %}
+                            <span class="badge badge--discount">{{ "ls-product-comparison-slider.attribute.discount"|trans }}</span>
+                        {% endif %}
+                    </p>
+                {% endif %}
+
+                {% if normalized.ratingAverage %}
+                    <p class="ls-comparison-card__rating" data-attribute="rating">
+                        <span class="label">{{ "ls-product-comparison-slider.attribute.rating"|trans }}</span>
+                        <span class="value">{{ normalized.ratingAverage }}</span>
+                    </p>
+                {% endif %}
+
+                {% if normalized.properties %}
+                    <ul class="ls-comparison-card__properties" data-attribute="properties">
+                        {% for property in normalized.properties %}
+                            <li>{{ property.group.translated.name }}: {{ property.translated.name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if normalized.customFields %}
+                    <ul class="ls-comparison-card__custom-fields" data-attribute="customFields">
+                        {% for key, value in normalized.customFields %}
+                            <li>{{ key }}: {{ value }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if normalized.availability is defined %}
+                    <p class="ls-comparison-card__availability" data-attribute="availability">
+                        <span class="label">{{ "ls-product-comparison-slider.attribute.availability"|trans }}</span>
+                        <span class="value">{{ normalized.availability ? "ls-product-comparison-slider.availability.inStock"|trans : "ls-product-comparison-slider.availability.outOfStock"|trans }}</span>
+                    </p>
+                {% endif %}
+
+                {% if normalized.deliveryTime %}
+                    <p class="ls-comparison-card__delivery" data-attribute="deliveryTime">
+                        <span class="label">{{ "ls-product-comparison-slider.attribute.deliveryTime"|trans }}</span>
+                        <span class="value">{{ normalized.deliveryTime }}</span>
+                    </p>
+                {% endif %}
+            </div>
+        {% endblock %}
+
+        {% block ls_product_comparison_card_actions %}
+            <footer class="ls-comparison-card__actions">
+                <button class="btn btn-buy ls-comparison-card__btn-add" data-action="add-to-cart">
+                    {{ "ls-product-comparison-slider.action.addToCart"|trans }}
+                </button>
+                <button class="btn btn-secondary ls-comparison-card__btn-wishlist" data-action="wishlist">
+                    {{ "ls-product-comparison-slider.action.wishlist"|trans }}
+                </button>
+            </footer>
+        {% endblock %}
+    </article>
+{% endblock %}
+

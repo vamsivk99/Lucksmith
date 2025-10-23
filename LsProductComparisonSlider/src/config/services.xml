@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <defaults autowire="true" autoconfigure="false" public="false"/>
+
+        <service id="Ls\ProductComparisonSlider\Content\Cms\DataResolver\ProductComparisonSliderResolver">
+            <tag name="shopware.cms.dataresolver"/>
+            <argument type="service" id="Ls\ProductComparisonSlider\Service\ProductComparisonService"/>
+            <argument type="service" id="Ls\ProductComparisonSlider\Service\ComparisonAnalyticsService"/>
+        </service>
+
+        <service id="Ls\ProductComparisonSlider\Service\ProductComparisonService"/>
+
+        <service id="Ls\ProductComparisonSlider\Service\ComparisonAnalyticsService"/>
+    </services>
+</container>
+

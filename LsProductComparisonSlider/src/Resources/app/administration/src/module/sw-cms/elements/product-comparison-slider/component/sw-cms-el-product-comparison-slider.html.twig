@@ -1,0 +1,19 @@
+{% block sw_cms_el_product_comparison_slider %}
+    <div class="sw-cms-el-product-comparison-slider">
+        <div class="sw-cms-el-product-comparison-slider__header">
+            <h3>{{ comparisonTitle }}</h3>
+            <p v-if="productCount === 0">{{ $tc('ls-product-comparison-slider.element.placeholder') }}</p>
+        </div>
+        <div class="sw-cms-el-product-comparison-slider__content">
+            <sw-loader v-if="!element.data" size="16px"></sw-loader>
+            <ul v-else class="sw-cms-el-product-comparison-slider__products">
+                <li v-for="product in element.data.products" :key="product.id">
+                    <div class="product-card">
+                        <sw-product-variant-info :product="product"></sw-product-variant-info>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+{% endblock %}
+

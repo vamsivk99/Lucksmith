@@ -1,0 +1,62 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: json, gd, intl, mbstring, xml
+          coverage: none
+
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse
+        continue-on-error: true
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Node Dependencies
+        run: npm install
+
+      - name: Run Jest Tests
+        run: npm test -- --ci
+
+      - name: Build Plugin
+        run: |
+          mkdir -p build
+          zip -r build/LsProductComparisonSlider.zip . -x '*.git*' 'node_modules/*'
+
+      - name: Test Installation
+        run: echo "Placeholder for Dockware/Shopware CLI install test"
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.0
+          name: Release v1.0.0
+          draft: false
+          prerelease: false
+          files: build/LsProductComparisonSlider.zip
+
