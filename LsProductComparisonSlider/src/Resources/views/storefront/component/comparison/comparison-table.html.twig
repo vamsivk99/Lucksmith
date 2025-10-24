@@ -24,6 +24,8 @@
                                     {% if attribute == 'price' and normalized %}
                                         {{ normalized.value|currency }}
                                     {% elseif attribute == 'rating' and normalized %}
+                                        {{ normalized|number_format(1, ',', '.') }}
+                                    {% elseif attribute == 'reviewCount' and normalized is not null %}
                                         {{ normalized }}
                                     {% elseif attribute == 'properties' and normalized %}
                                         <ul>

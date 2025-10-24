@@ -40,10 +40,13 @@
                     </p>
                 {% endif %}
 
-                {% if normalized.ratingAverage %}
+                {% if normalized.rating %}
                     <p class="ls-comparison-card__rating" data-attribute="rating">
                         <span class="label">{{ "ls-product-comparison-slider.attribute.rating"|trans }}</span>
-                        <span class="value">{{ normalized.ratingAverage }}</span>
+                        <span class="value">{{ normalized.rating|number_format(1, ',', '.') }}</span>
+                        {% if normalized.reviewCount %}
+                            <span class="meta">({{ normalized.reviewCount }} {{ "ls-product-comparison-slider.reviews"|trans }})</span>
+                        {% endif %}
                     </p>
                 {% endif %}
 

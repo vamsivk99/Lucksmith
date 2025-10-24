@@ -11,6 +11,8 @@ use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Pricing\PriceCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductReview\ProductReviewCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductReview\ProductReviewEntity;
 
 class ProductComparisonServiceTest extends TestCase
 {
@@ -22,13 +24,18 @@ class ProductComparisonServiceTest extends TestCase
         $product->setId('product-id');
         $product->setTranslation('name', 'Product Name');
         $product->setCalculatedPrice(new CalculatedPrice(1, 1, new PriceCollection(), new QuantityPriceCollection(), []));
+        $product->setReviews(new ProductReviewCollection([
+            (new ProductReviewEntity())->assign(['id' => 'review-1']),
+            (new ProductReviewEntity())->assign(['id' => 'review-2']),
+        ]));
 
         $collection = new ProductCollection([$product]);
 
-        $normalized = $service->normalizeProducts($collection, ['price']);
+        $normalized = $service->normalizeProducts($collection, ['price', 'rating', 'deliveryTime']);
 
         static::assertArrayHasKey('product-id', $normalized);
         static::assertArrayHasKey('price', $normalized['product-id']);
+        static::assertSame(2, $normalized['product-id']['reviewCount']);
     }
 }
 

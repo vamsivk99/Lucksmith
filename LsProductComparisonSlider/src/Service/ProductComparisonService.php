@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Ls\ProductComparisonSlider\Service;
 
+use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
+use Shopware\Core\Content\Product\Aggregate\ProductReview\ProductReviewCollection;
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 
 class ProductComparisonService
 {
@@ -29,10 +30,10 @@ class ProductComparisonService
         $data = [
             'name' => $product->getTranslation('name'),
             'cover' => $product->getCover()?->getMedia(),
-            'ratingAverage' => $product->getRatingAverage(),
             'availableStock' => $product->getAvailableStock(),
             'isCloseout' => $product->getIsCloseout(),
-            'deliveryTime' => $product->getDeliveryTime()?->getTranslation('name'),
+            'rating' => $product->getRatingAverage(),
+            'reviewCount' => $this->resolveReviewCount($product->getReviews()),
         ];
 
         if (
@@ -52,6 +53,10 @@ class ProductComparisonService
 
         if (\in_array('availability', $attributes, true)) {
             $data['availability'] = $product->getAvailableStock() > 0;
+        }
+
+        if (\in_array('deliveryTime', $attributes, true)) {
+            $data['deliveryTime'] = $product->getDeliveryTime()?->getTranslation('name');
         }
 
         return $data;
@@ -123,8 +128,14 @@ class ProductComparisonService
         $bestValue = null;
 
         foreach ($metricValues as $productId => $value) {
-            if ($bestValue === null || $value > $bestValue) {
-                $bestValue = $value;
+            $score = $this->extractComparableScore($attribute, $value);
+
+            if ($score === null) {
+                continue;
+            }
+
+            if ($bestValue === null || $this->isBetterScore($attribute, $score, $bestValue)) {
+                $bestValue = $score;
                 $bestProductId = $productId;
             }
         }
@@ -134,7 +145,7 @@ class ProductComparisonService
         }
 
         $metrics[$attribute] = [
-            $bestProductId => $bestValue
+            $bestProductId => $metricValues[$bestProductId]
         ];
     }
 
@@ -157,6 +168,60 @@ class ProductComparisonService
             'listPrice' => $listPrice?->getPrice(),
             'discount' => $listPrice !== null ? $listPrice->getPrice() - $price->getTotalPrice() : null
         ];
+    }
+
+    private function resolveReviewCount(?ProductReviewCollection $reviews): int
+    {
+        if ($reviews === null) {
+            return 0;
+        }
+
+        return $reviews->count();
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function extractComparableScore(string $attribute, $value): ?float
+    {
+        if ($attribute === 'price') {
+            if (!\is_array($value) || !\array_key_exists('value', $value)) {
+                return null;
+            }
+
+            return (float) $value['value'];
+        }
+
+        if ($attribute === 'rating') {
+            return (float) $value;
+        }
+
+        if ($attribute === 'availability') {
+            return (float) ($value ? 1 : 0);
+        }
+
+        if ($attribute === 'deliveryTime') {
+            if (!\is_string($value) || $value === '') {
+                return null;
+            }
+
+            return (float) \strlen($value) * -1;
+        }
+
+        return null;
+    }
+
+    private function isBetterScore(string $attribute, float $candidate, float $current): bool
+    {
+        if ($attribute === 'price') {
+            return $candidate < $current;
+        }
+
+        if ($attribute === 'deliveryTime') {
+            return $candidate > $current;
+        }
+
+        return $candidate > $current;
     }
 }
 
