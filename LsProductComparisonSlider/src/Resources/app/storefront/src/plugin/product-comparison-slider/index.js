@@ -36,6 +36,9 @@ export default class ProductComparisonSlider extends Plugin {
         this.registerNavigation();
         this.registerSwipeGestures();
         this.registerResizeObserver();
+        this.updateSlidePositions();
+        this.updateActiveSlideState();
+        this.syncAriaAttributes();
     }
 
     applyAnimationStyle() {
@@ -44,6 +47,8 @@ export default class ProductComparisonSlider extends Plugin {
 
     registerNavigation() {
         this.viewport.addEventListener('keydown', this.onKeyDown.bind(this));
+        this.viewport.setAttribute('tabindex', '0');
+        this.viewport.setAttribute('role', 'group');
     }
 
     registerSwipeGestures() {
@@ -85,6 +90,9 @@ export default class ProductComparisonSlider extends Plugin {
         this.slides.forEach((slide, index) => {
             slide.style.transform = `translateX(${(index - this.state.currentIndex) * viewportWidth}px)`;
         });
+
+        this.updateActiveSlideState();
+        this.syncAriaAttributes();
     }
 
     showPreviousSlide() {
@@ -108,11 +116,54 @@ export default class ProductComparisonSlider extends Plugin {
     onKeyDown(event) {
         if (event.key === 'ArrowLeft') {
             this.showPreviousSlide();
+            event.preventDefault();
         }
 
         if (event.key === 'ArrowRight') {
             this.showNextSlide();
+            event.preventDefault();
         }
+
+        if (event.key === 'Home') {
+            this.state.currentIndex = 0;
+            this.updateSlidePositions();
+            event.preventDefault();
+        }
+
+        if (event.key === 'End') {
+            this.state.currentIndex = this.slides.length - 1;
+            this.updateSlidePositions();
+            event.preventDefault();
+        }
+    }
+
+    updateActiveSlideState() {
+        this.slides.forEach((slide, index) => {
+            const isActive = index === this.state.currentIndex;
+
+            slide.classList.toggle('is-active', isActive);
+            slide.classList.toggle('is-inactive', !isActive);
+
+            if (isActive && !slide.classList.contains('ls-comparison-slider__slide--pinned')) {
+                slide.classList.add('ls-comparison-slider__slide--focused');
+            } else {
+                slide.classList.remove('ls-comparison-slider__slide--focused');
+            }
+        });
+
+        const activeSlide = this.slides[this.state.currentIndex];
+
+        if (activeSlide) {
+            activeSlide.focus({ preventScroll: true });
+        }
+    }
+
+    syncAriaAttributes() {
+        this.slides.forEach((slide, index) => {
+            const isActive = index === this.state.currentIndex;
+            slide.setAttribute('aria-hidden', (!isActive).toString());
+            slide.setAttribute('tabindex', isActive ? '0' : '-1');
+        });
     }
 
     bindComparisonControls() {
@@ -135,6 +186,13 @@ export default class ProductComparisonSlider extends Plugin {
                     case 'share':
                         this.shareComparison();
                         break;
+                }
+            });
+
+            control.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    control.click();
                 }
             });
         });

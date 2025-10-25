@@ -1,13 +1,18 @@
 {% block ls_product_comparison_card %}
-    <article class="ls-comparison-card" data-product-id="{{ product.id }}">
+    {% set isHighlighted = highlightMetrics.rating is defined and highlightMetrics.rating[product.id] is defined %}
+
+    <article class="ls-comparison-card"
+             data-product-id="{{ product.id }}"
+             data-highlight="{{ isHighlighted ? 'true' : 'false' }}"
+             aria-label="{{ product.translated.name }}">
         {% block ls_product_comparison_card_header %}
             <header class="ls-comparison-card__header">
                 {% if recommendationProductId and product.id == recommendationProductId %}
                     <span class="ls-comparison-card__badge">{{ "ls-product-comparison-slider.badge.recommendation"|trans }}</span>
                 {% endif %}
-                <h3>{{ product.translated.name }}</h3>
-                {% if highlightMetrics.rating and highlightMetrics.rating[product.id] is defined %}
-                    <span class="ls-comparison-card__highlight">{{ "ls-product-comparison-slider.highlight.best"|trans }}</span>
+                <h3 id="comparison-card-title-{{ product.id }}">{{ product.translated.name }}</h3>
+                {% if isHighlighted %}
+                    <span class="ls-comparison-card__highlight" role="status">{{ "ls-product-comparison-slider.highlight.best"|trans }}</span>
                 {% endif %}
             </header>
         {% endblock %}

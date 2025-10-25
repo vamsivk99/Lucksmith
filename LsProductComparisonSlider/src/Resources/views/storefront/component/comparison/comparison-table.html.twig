@@ -5,12 +5,12 @@
         </header>
 
         <div class="ls-comparison-table__container">
-            <table>
+            <table role="table">
                 <thead>
                     <tr>
                         <th scope="col">{{ "ls-product-comparison-slider.table.attribute"|trans }}</th>
                         {% for product in products %}
-                            <th scope="col">{{ product.translated.name }}</th>
+                            <th scope="col" id="comparison-column-{{ product.id }}">{{ product.translated.name }}</th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -20,7 +20,7 @@
                             <th scope="row">{{ ("ls-product-comparison-slider.attribute." ~ attribute)|trans }}</th>
                             {% for product in products %}
                                 {% set normalized = normalizedData[product.id][attribute] ?? null %}
-                                <td>
+                                <td headers="comparison-column-{{ product.id }}">
                                     {% if attribute == 'price' and normalized %}
                                         {{ normalized.value|currency }}
                                     {% elseif attribute == 'rating' and normalized %}

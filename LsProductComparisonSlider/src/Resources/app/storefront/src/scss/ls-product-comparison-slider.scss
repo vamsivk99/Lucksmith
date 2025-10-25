@@ -99,6 +99,7 @@
         background: rgba(15, 23, 42, 0.65);
         backdrop-filter: blur(18px);
         box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05);
+        outline: none;
     }
 
     &__track {
@@ -351,6 +352,29 @@
             opacity: 1;
             transform: translateY(-12px) scale(1.02);
         }
+    }
+}
+
+.ls-comparison-slider__control {
+    &:focus-visible {
+        outline: 2px solid rgba(59, 130, 246, 0.85);
+        outline-offset: 3px;
+    }
+}
+
+.ls-comparison-card {
+    &:focus-visible {
+        outline: 2px solid rgba(56, 189, 248, 0.6);
+        outline-offset: 4px;
+    }
+}
+
+.ls-comparison-table table {
+    width: 100%;
+
+    th,
+    td {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.15);
     }
 }
 

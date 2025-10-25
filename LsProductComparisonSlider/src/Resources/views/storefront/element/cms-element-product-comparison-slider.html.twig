@@ -2,6 +2,8 @@
     {% set config = element.fieldConfig.elements %}
     {% set data = element.data %}
 
+    {% set ariaLabel = data.title ?: "ls-product-comparison-slider.a11y.slider"|trans %}
+
     <div class="ls-comparison-slider ls-comparison-slider--{{ data.colorScheme }}"
          data-plugin="ProductComparisonSlider"
          data-element-id="{{ element.id }}"
@@ -42,8 +44,12 @@
         {% endblock %}
 
         {% block element_product_comparison_slider_track %}
-            <div class="ls-comparison-slider__viewport" role="region" aria-live="polite">
-                <div class="ls-comparison-slider__track" data-role="track">
+            <div class="ls-comparison-slider__viewport"
+                 role="region"
+                 aria-roledescription="{{ "ls-product-comparison-slider.a11y.roledescription"|trans }}"
+                 aria-live="polite"
+                 aria-label="{{ ariaLabel }}">
+                <div class="ls-comparison-slider__track" data-role="track" tabindex="0">
                     {% for product in data.products %}
                         {% sw_include '@Storefront/ls-product-comparison-slider/component/comparison/comparison-card.html.twig' with {
                             product: product,
