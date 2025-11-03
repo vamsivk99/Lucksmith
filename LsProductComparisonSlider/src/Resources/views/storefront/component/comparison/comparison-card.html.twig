@@ -89,11 +89,13 @@
 
         {% block ls_product_comparison_card_actions %}
             <footer class="ls-comparison-card__actions">
-                <button class="btn btn-buy ls-comparison-card__btn-add" data-action="add-to-cart">
-                    {{ "ls-product-comparison-slider.action.addToCart"|trans }}
+                <button class="btn btn-buy ls-comparison-card__btn-add" data-action="add-to-cart" type="button">
+                    <span class="btn__label">{{ "ls-product-comparison-slider.action.addToCart"|trans }}</span>
+                    <span class="btn__loader" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-secondary ls-comparison-card__btn-wishlist" data-action="wishlist">
-                    {{ "ls-product-comparison-slider.action.wishlist"|trans }}
+                <button class="btn btn-secondary ls-comparison-card__btn-wishlist" data-action="wishlist" type="button">
+                    <span class="btn__label">{{ "ls-product-comparison-slider.action.wishlist"|trans }}</span>
+                    <span class="btn__loader" aria-hidden="true"></span>
                 </button>
             </footer>
         {% endblock %}

@@ -37,5 +37,21 @@ class ProductComparisonServiceTest extends TestCase
         static::assertArrayHasKey('price', $normalized['product-id']);
         static::assertSame(2, $normalized['product-id']['reviewCount']);
     }
+
+    public function testCalculateHighlightMetricsPrefersLowerPrice(): void
+    {
+        $service = new ProductComparisonService();
+
+        $normalizedProducts = [
+            'product-a' => ['price' => ['value' => 199.0]],
+            'product-b' => ['price' => ['value' => 149.0]],
+        ];
+
+        $metrics = $service->calculateHighlightMetrics($normalizedProducts, 'best');
+
+        static::assertArrayHasKey('price', $metrics);
+        static::assertArrayHasKey('product-b', $metrics['price']);
+        static::assertSame(['value' => 149.0], $metrics['price']['product-b']);
+    }
 }
 

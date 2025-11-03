@@ -2,75 +2,86 @@
     {% set config = element.fieldConfig.elements %}
     {% set data = element.data %}
 
-    {% set ariaLabel = data.title ?: "ls-product-comparison-slider.a11y.slider"|trans %}
+    {% set emptyText = "ls-product-comparison-slider.emptyState"|trans %}
 
-    <div class="ls-comparison-slider ls-comparison-slider--{{ data.colorScheme }}"
-         data-plugin="ProductComparisonSlider"
-         data-element-id="{{ element.id }}"
-         data-products='{{ data.normalizedData|json_encode }}'
-         data-highlight-mode="{{ data.highlightMode }}"
-         data-animation-style="{{ data.animationStyle }}"
-         data-show-table="{{ data.showComparisonTable ? 'true' : 'false' }}"
-         data-quick-add="{{ data.enableQuickAdd ? 'true' : 'false' }}"
-         data-tags='{{ data.comparisonTags|json_encode }}'>
-        {% block element_product_comparison_slider_header %}
-            <header class="ls-comparison-slider__header">
-                <div class="ls-comparison-slider__title">
-                    <h2>{{ data.title }}</h2>
-                    {% if data.comparisonTags %}
-                        <ul class="ls-comparison-slider__tags">
-                            {% for tag in data.comparisonTags %}
-                                <li>{{ tag }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-
-                <div class="ls-comparison-slider__controls" aria-label="{{ "ls-product-comparison-slider.controls"|trans }}">
-                    <button class="ls-comparison-slider__control" data-action="pin" aria-pressed="false">
-                        {{ "ls-product-comparison-slider.controls.pin"|trans }}
-                    </button>
-                    <button class="ls-comparison-slider__control" data-action="split" aria-pressed="false">
-                        {{ "ls-product-comparison-slider.controls.split"|trans }}
-                    </button>
-                    <button class="ls-comparison-slider__control" data-action="fullscreen">
-                        {{ "ls-product-comparison-slider.controls.fullscreen"|trans }}
-                    </button>
-                    <button class="ls-comparison-slider__control" data-action="share">
-                        {{ "ls-product-comparison-slider.controls.share"|trans }}
-                    </button>
-                </div>
-            </header>
-        {% endblock %}
-
-        {% block element_product_comparison_slider_track %}
-            <div class="ls-comparison-slider__viewport"
-                 role="region"
-                 aria-roledescription="{{ "ls-product-comparison-slider.a11y.roledescription"|trans }}"
-                 aria-live="polite"
-                 aria-label="{{ ariaLabel }}">
-                <div class="ls-comparison-slider__track" data-role="track" tabindex="0">
-                    {% for product in data.products %}
-                        {% sw_include '@Storefront/ls-product-comparison-slider/component/comparison/comparison-card.html.twig' with {
-                            product: product,
-                            recommendationProductId: data.recommendationProductId,
-                            normalized: data.normalizedData[product.id] ?? {},
-                            highlightMetrics: data.highlightMetrics
-                        } %}
-                    {% endfor %}
-                </div>
+    {% if data.products|length == 0 %}
+        <div class="ls-comparison-slider ls-comparison-slider--empty-state">
+            <div class="ls-comparison-slider__empty">
+                {{ emptyText == 'ls-product-comparison-slider.emptyState' ? 'Bitte wählen Sie mindestens zwei Produkte im Admin aus, um den Vergleich zu aktivieren.' : emptyText }}
             </div>
-        {% endblock %}
+        </div>
+    {% else %}
+        {% set ariaLabel = data.title ?: "ls-product-comparison-slider.a11y.slider"|trans %}
 
-        {% if data.showComparisonTable %}
-            {% sw_include '@Storefront/ls-product-comparison-slider/component/comparison/comparison-table.html.twig' with {
-                products: data.products,
-                normalizedData: data.normalizedData,
-                attributes: data.attributes,
-                highlightMode: data.highlightMode,
-                highlightMetrics: data.highlightMetrics
-            } %}
-        {% endif %}
-    </div>
+        <div class="ls-comparison-slider ls-comparison-slider--{{ data.colorScheme }}"
+             data-plugin="ProductComparisonSlider"
+             data-element-id="{{ element.id }}"
+             data-color-scheme="{{ data.colorScheme }}"
+             data-products='{{ data.normalizedData|json_encode }}'
+             data-highlight-mode="{{ data.highlightMode }}"
+             data-animation-style="{{ data.animationStyle }}"
+             data-show-table="{{ data.showComparisonTable ? 'true' : 'false' }}"
+             data-quick-add="{{ data.enableQuickAdd ? 'true' : 'false' }}"
+             data-tags='{{ data.comparisonTags|json_encode }}'>
+            {% block element_product_comparison_slider_header %}
+                <header class="ls-comparison-slider__header">
+                    <div class="ls-comparison-slider__title">
+                        <h2>{{ data.title }}</h2>
+                        {% if data.comparisonTags %}
+                            <ul class="ls-comparison-slider__tags">
+                                {% for tag in data.comparisonTags %}
+                                    <li>{{ tag }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="ls-comparison-slider__controls" aria-label="{{ "ls-product-comparison-slider.controls"|trans }}">
+                        <button class="ls-comparison-slider__control" data-action="pin" aria-pressed="false" type="button">
+                            {{ "ls-product-comparison-slider.controls.pin"|trans }}
+                        </button>
+                        <button class="ls-comparison-slider__control" data-action="split" aria-pressed="false" type="button">
+                            {{ "ls-product-comparison-slider.controls.split"|trans }}
+                        </button>
+                        <button class="ls-comparison-slider__control" data-action="fullscreen" type="button">
+                            {{ "ls-product-comparison-slider.controls.fullscreen"|trans }}
+                        </button>
+                        <button class="ls-comparison-slider__control" data-action="share" type="button">
+                            {{ "ls-product-comparison-slider.controls.share"|trans }}
+                        </button>
+                    </div>
+                </header>
+            {% endblock %}
+
+            {% block element_product_comparison_slider_track %}
+                <div class="ls-comparison-slider__viewport"
+                     role="region"
+                     aria-roledescription="{{ "ls-product-comparison-slider.a11y.roledescription"|trans }}"
+                     aria-live="polite"
+                     aria-label="{{ ariaLabel }}">
+                    <div class="ls-comparison-slider__track" data-role="track" tabindex="0">
+                        {% for product in data.products %}
+                            {% sw_include '@Storefront/ls-product-comparison-slider/component/comparison/comparison-card.html.twig' with {
+                                product: product,
+                                recommendationProductId: data.recommendationProductId,
+                                normalized: data.normalizedData[product.id] ?? {},
+                                highlightMetrics: data.highlightMetrics
+                            } %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endblock %}
+
+            {% if data.showComparisonTable %}
+                {% sw_include '@Storefront/ls-product-comparison-slider/component/comparison/comparison-table.html.twig' with {
+                    products: data.products,
+                    normalizedData: data.normalizedData,
+                    attributes: data.attributes,
+                    highlightMode: data.highlightMode,
+                    highlightMetrics: data.highlightMetrics
+                } %}
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}
 

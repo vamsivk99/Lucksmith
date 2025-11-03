@@ -1,6 +1,7 @@
 import Plugin from 'src/plugin-system/plugin.class';
 import HttpClient from 'src/service/http-client.service';
 import WishlistPlugin from 'src/plugin/wishlist/wishlist-storage.plugin';
+import Debouncer from 'src/helper/debouncer.helper';
 
 export default class ProductComparisonSlider extends Plugin {
     init() {
@@ -13,12 +14,16 @@ export default class ProductComparisonSlider extends Plugin {
             currentIndex: 0
         };
 
+        this.loadingButtons = new Map();
+
         this.products = JSON.parse(this.el.dataset.products || '{}');
         this.highlightMode = this.el.dataset.highlightMode || 'best';
         this.animationStyle = this.el.dataset.animationStyle || 'slide';
         this.showComparisonTable = this.el.dataset.showTable === 'true';
         this.enableQuickAdd = this.el.dataset.quickAdd === 'true';
         this.tags = JSON.parse(this.el.dataset.tags || '[]');
+
+        this.ensureSupportedAnimation();
 
         this.initSlider();
         this.bindComparisonControls();
@@ -29,8 +34,24 @@ export default class ProductComparisonSlider extends Plugin {
 
     initSlider() {
         this.track = this.el.querySelector('[data-role="track"]');
+
+        if (!this.track) {
+            this.slides = [];
+            return;
+        }
+
         this.slides = Array.from(this.track.children);
         this.viewport = this.el.querySelector('.ls-comparison-slider__viewport');
+
+        if (!this.viewport) {
+            this.slides = [];
+            return;
+        }
+
+        if (!this.slides.length) {
+            this.el.classList.add('ls-comparison-slider--empty');
+            return;
+        }
 
         this.applyAnimationStyle();
         this.registerNavigation();
@@ -78,7 +99,13 @@ export default class ProductComparisonSlider extends Plugin {
 
     registerResizeObserver() {
         const observer = new ResizeObserver(() => {
-            this.updateSlidePositions();
+            if (!this.resizeHandler) {
+                this.resizeHandler = Debouncer.debounce(() => {
+                    this.updateSlidePositions();
+                }, 100);
+            }
+
+            this.resizeHandler();
         });
 
         observer.observe(this.viewport);
@@ -153,7 +180,7 @@ export default class ProductComparisonSlider extends Plugin {
 
         const activeSlide = this.slides[this.state.currentIndex];
 
-        if (activeSlide) {
+        if (activeSlide && document.activeElement !== activeSlide && this.viewport.contains(document.activeElement)) {
             activeSlide.focus({ preventScroll: true });
         }
     }
@@ -267,12 +294,13 @@ export default class ProductComparisonSlider extends Plugin {
                     return;
                 }
 
-                this.addToCartFromComparison(productId);
+                this.setButtonLoading(button, true);
+                this.addToCartFromComparison(productId, button);
             });
         });
     }
 
-    addToCartFromComparison(productId) {
+    addToCartFromComparison(productId, button) {
         const payload = JSON.stringify({
             items: [{
                 id: productId,
@@ -282,10 +310,16 @@ export default class ProductComparisonSlider extends Plugin {
             }]
         });
 
-        this.httpClient.post('/store-api/checkout/cart/line-item', payload, () => {
-            this.dispatchCheckoutEvent('cart-add', productId);
-            this.trackAnalyticsEvent('comparison_add_to_cart', productId);
-        });
+        this.httpClient.post('/store-api/checkout/cart/line-item', payload, {'Content-Type': 'application/json'})
+            .then(() => {
+                this.dispatchCheckoutEvent('cart-add', productId);
+                this.trackAnalyticsEvent('comparison_add_to_cart', productId);
+                this.setButtonLoading(button, false);
+            })
+            .catch(() => {
+                this.setButtonLoading(button, false);
+                this.handleActionError('cart', productId);
+            });
     }
 
     dispatchCheckoutEvent(eventName, productId) {
@@ -342,21 +376,73 @@ export default class ProductComparisonSlider extends Plugin {
                     return;
                 }
 
-                this.addToWishlist(productId);
+                this.setButtonLoading(button, true);
+                this.addToWishlist(productId, button);
             });
         });
     }
 
-    addToWishlist(productId) {
+    addToWishlist(productId, button) {
         const wishlistPlugin = WishlistPlugin.getPluginInstanceFromElement(document.body);
 
         if (!wishlistPlugin) {
+            this.handleActionError('wishlist', productId);
+            this.setButtonLoading(button, false);
             return;
         }
 
         wishlistPlugin.add(productId).then(() => {
             this.trackAnalyticsEvent('comparison_add_to_wishlist', productId);
-        }).catch(() => {});
+            this.setButtonLoading(button, false);
+        }).catch(() => {
+            this.setButtonLoading(button, false);
+            this.handleActionError('wishlist', productId);
+        });
+    }
+
+    setButtonLoading(button, isLoading) {
+        if (!button) {
+            return;
+        }
+
+        const action = button.dataset.action || 'action';
+        const productId = button.closest('[data-product-id]')?.dataset.productId || '';
+        const key = `${action}-${productId}`;
+
+        if (isLoading) {
+            this.loadingButtons.set(key, button);
+            button.classList.add('is-loading');
+            button.setAttribute('disabled', 'disabled');
+            button.setAttribute('aria-busy', 'true');
+        } else {
+            this.loadingButtons.delete(key);
+            button.classList.remove('is-loading');
+            button.removeAttribute('disabled');
+            button.removeAttribute('aria-busy');
+        }
+    }
+
+    handleActionError(type, productId) {
+        /* eslint-disable no-console */
+        console.warn(`Product comparison ${type} action failed for product ${productId}`);
+        /* eslint-enable no-console */
+
+        const event = new CustomEvent('ls-comparison-slider:error', {
+            detail: {
+                type,
+                productId
+            }
+        });
+
+        document.body.dispatchEvent(event);
+    }
+
+    ensureSupportedAnimation() {
+        const supportedStyles = ['slide', 'fade', 'flip', 'zoom'];
+
+        if (!supportedStyles.includes(this.animationStyle)) {
+            this.animationStyle = 'slide';
+        }
     }
 }
 

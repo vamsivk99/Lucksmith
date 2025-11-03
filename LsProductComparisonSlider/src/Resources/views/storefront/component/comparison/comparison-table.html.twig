@@ -20,7 +20,8 @@
                             <th scope="row">{{ ("ls-product-comparison-slider.attribute." ~ attribute)|trans }}</th>
                             {% for product in products %}
                                 {% set normalized = normalizedData[product.id][attribute] ?? null %}
-                                <td headers="comparison-column-{{ product.id }}">
+                                {% set isHighlight = highlightMetrics[attribute] is defined and highlightMetrics[attribute][product.id] is defined %}
+                                <td headers="comparison-column-{{ product.id }}" class="{{ isHighlight ? 'is-highlight' }}">
                                     {% if attribute == 'price' and normalized %}
                                         {{ normalized.value|currency }}
                                     {% elseif attribute == 'rating' and normalized %}
